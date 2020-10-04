@@ -3,3 +3,7 @@
 ################################################################################
 
 /.vs/SbC51CaoDanBinaryToHex/v16
+/bin
+/obj
+/SbC51CaoDanBinaryToHex.csproj.user
+*.pfx
