@@ -7,3 +7,5 @@
 /obj
 /SbC51CaoDanBinaryToHex.csproj.user
 *.pfx
+/.vs/BinPP/v16
+*.user
