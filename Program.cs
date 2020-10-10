@@ -106,13 +106,27 @@ namespace BinPP
 		private static void RestoreDir(string dir)
 		{
 			DirectoryInfo di = new DirectoryInfo(dir);
+			RestoreDir(di);
+		}
+		private static void RestoreDir(DirectoryInfo di)
+		{
+			Console.WriteLine($"Restoring directory {di.FullName}.");
+			foreach (var subdir in di.GetDirectories())
+			{
+				RestoreDir(subdir.FullName);
+			}
 			foreach (var x in di.GetFiles())
 			{
 				if (x.Name.EndsWith(".c") || x.Name.EndsWith(".h"))
 				{
 					var str = File.ReadAllText(x.FullName);
 					if (str.StartsWith("//BINPP\r\n") && str.EndsWith("\r\n//BINPP"))
-						x.Delete();
+						if(File.Exists(x.FullName+".binpp"))x.Delete();
+						else
+						{
+							Console.WriteLine($"ERROR : Backup file of {x.Name} not found!Skipping Restoration!\nYou need to manually restore this file!");
+							
+						}
 				}
 			}
 			foreach (var x in di.GetFiles())
@@ -125,9 +139,20 @@ namespace BinPP
 				}
 			}
 		}
-		private static void RestoreFile(string file)
+		private static void RestoreFile(string fn)
 		{
-
+			Console.WriteLine($"Restoring file {fn} ...");
+			var x = new FileInfo(fn);
+			if (x.Name.EndsWith(".c") || x.Name.EndsWith(".h"))
+			{
+				var str = File.ReadAllText(x.FullName);
+				if (str.StartsWith("//BINPP\r\n") && str.EndsWith("\r\n//BINPP"))
+					x.Delete();
+			}
+			x = new FileInfo(x.FullName+".binpp");
+			var p = x.FullName.Remove(x.FullName.Length - 6);
+			Console.WriteLine(p);
+			x.MoveTo(p);
 		}
 		public static int Main(string[] args)
 		{
@@ -162,12 +187,16 @@ namespace BinPP
 					}
 					else RestoreCurrentDir();
 					return 0;
+				}else if (args[0] == "help")
+				{
+					Console.WriteLine("For usage of this application , please read the README.MD .");
+					return 0;
 				}
 				foreach (var t in args)
 				{
 					try
 					{
-						Console.WriteLine($"Processing {t} .");
+						Console.WriteLine($"Processing {t} ...");
 						string file = File.ReadAllText(t);
 						string raw = file;
 						var nf = t + ".binpp";
@@ -198,7 +227,9 @@ namespace BinPP
 
 		private static void Restore(string entry)
 		{
-			throw new NotImplementedException();
+			if (File.Exists(entry)) RestoreFile(entry);
+			else if (Directory.Exists(entry)) RestoreDir(entry);
+			else Console.WriteLine($"Skipped the restoration of {entry} , since it's not found.");
 		}
 	}
 }
